@@ -1,0 +1,19 @@
+@@ -1,6 +1,7 @@
+ import { db } from "./db";
+-import { logger } from "./logger";
++import { logger } from "./logger";
++import { metrics } from "./metrics";
+ 
+ export async function loadUser(id: string) {
+   const user = await db.user.findById(id);
+@@ -14,7 +15,10 @@ export async function loadUser(id: string) {
+   if (!user) {
+     return null;
+   }
+-  return sanitize(user);
++  logger.info({ id }, "Loaded user");
++  metrics.increment("user.load");
++
++  return sanitize(user);
+ }
+
