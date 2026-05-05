@@ -6,19 +6,19 @@ import { buildFileReviewPrompt, reviewSystemPrompt } from "./prompts";
 import type { StructuredOutputModel } from "./types";
 
 const reviewCommentSchema = z.object({
-  file_path: z.string().min(1),
-  line_number: z.number().int().positive(),
+  file_path: z.string(),
+  line_number: z.number(),
   severity: z.enum(["critical", "warning", "suggestion"]),
   category: z.enum(["security", "correctness", "architecture", "performance", "style"]),
-  title: z.string().min(1).max(120),
-  explanation: z.string().min(1),
+  title: z.string(),
+  explanation: z.string(),
   suggested_fix: z.string().optional(),
   references_similar_pattern: z.string().optional(),
-  confidence: z.number().min(0).max(1),
+  confidence: z.number(),
 });
 
 export const reviewOutputSchema = z.object({
-  summary: z.string().min(1),
+  summary: z.string(),
   overall_risk: z.enum(["low", "medium", "high"]),
   comments: z.array(reviewCommentSchema),
 });

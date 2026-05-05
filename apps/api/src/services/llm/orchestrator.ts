@@ -8,7 +8,7 @@ import { reviewDiffChunk } from "./reviewer";
 import type { StructuredOutputModel } from "./types";
 
 const reviewSummarySchema = z.object({
-  summary: z.string().min(1),
+  summary: z.string(),
   overall_risk: z.enum(["low", "medium", "high"]),
 });
 
