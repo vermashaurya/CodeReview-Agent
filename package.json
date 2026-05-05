@@ -1,0 +1,23 @@
+{
+  "name": "icra",
+  "private": true,
+  "packageManager": "bun@1.2.13",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"bun run --filter @icra/api dev\" \"bun run --filter @icra/web dev\"",
+    "dev:api": "bun run --filter @icra/api dev",
+    "dev:web": "bun run --filter @icra/web dev",
+    "build": "bun run --filter @icra/shared build && bun run --filter @icra/api build && bun run --filter @icra/web build",
+    "check": "bun run --filter '*' typecheck",
+    "db:generate": "bun run --filter @icra/api db:generate",
+    "db:migrate": "bun run --filter @icra/api db:migrate"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.8.3"
+  }
+}
+
