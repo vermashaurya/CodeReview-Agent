@@ -16,7 +16,7 @@ export const repositories = pgTable("repositories", {
   githubOwner: text("github_owner").notNull(),
   githubRepo: text("github_repo").notNull(),
   githubTokenEnc: text("github_token_enc").notNull(),
-  model: text("model").notNull().default("claude-sonnet-4-20250514"),
+  model: text("model").notNull().default("gemini-1.5-flash"),
   reviewPolicy: jsonb("review_policy"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
@@ -87,4 +87,3 @@ export const commentFeedback = pgTable("comment_feedback", {
   editedText: text("edited_text"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
-

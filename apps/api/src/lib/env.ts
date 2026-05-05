@@ -12,7 +12,7 @@ const envSchema = z.object({
   GITHUB_WEBHOOK_SECRET: z.string().min(1, "GITHUB_WEBHOOK_SECRET is required"),
   GITHUB_CLIENT_ID: z.string().optional().default(""),
   GITHUB_CLIENT_SECRET: z.string().optional().default(""),
-  ANTHROPIC_API_KEY: z.string().optional().default(""),
+  GEMINI_API_KEY: z.string().min(1, "GEMINI_API_KEY is required"),
   OPENAI_API_KEY: z.string().optional().default(""),
   TOKEN_ENCRYPTION_KEY: z.string().optional().default(""),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
