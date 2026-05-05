@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS repositories (
   github_owner TEXT NOT NULL,
   github_repo TEXT NOT NULL,
   github_token_enc TEXT NOT NULL,
-  model TEXT NOT NULL DEFAULT 'claude-sonnet-4-20250514',
+  model TEXT NOT NULL DEFAULT 'gemini-1.5-flash',
   review_policy JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -69,4 +69,3 @@ CREATE TABLE IF NOT EXISTS comment_feedback (
   edited_text TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
