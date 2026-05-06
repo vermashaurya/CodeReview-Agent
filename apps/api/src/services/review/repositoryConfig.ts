@@ -7,6 +7,7 @@ export interface RepositoryConfig {
   id: string;
   model: string;
   reviewPolicy: string | null;
+  githubToken: string;
 }
 
 function stringifyReviewPolicy(reviewPolicy: unknown): string | null {
@@ -30,6 +31,7 @@ export async function loadRepositoryConfig(
       id: repositories.id,
       model: repositories.model,
       reviewPolicy: repositories.reviewPolicy,
+      githubToken: repositories.githubTokenEnc,
     })
     .from(repositories)
     .where(and(eq(repositories.githubOwner, owner), eq(repositories.githubRepo, repo)))
@@ -44,5 +46,6 @@ export async function loadRepositoryConfig(
     id: repository.id,
     model: repository.model,
     reviewPolicy: stringifyReviewPolicy(repository.reviewPolicy),
+    githubToken: repository.githubToken,
   };
 }

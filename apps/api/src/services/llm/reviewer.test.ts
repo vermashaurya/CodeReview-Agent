@@ -113,7 +113,7 @@ describe("reviewDiffChunk", () => {
       category: "style",
       title: "Avoid debug logging",
       explanation: "This log statement should not ship.",
-      confidence: 0.73,
+      confidence: 0.9,
     });
     expect(model.prompts[0]?.name).toBe("submit_review");
     expect(model.prompts[0]?.input.includes("Do not hallucinate file paths or line numbers.")).toBe(true);
