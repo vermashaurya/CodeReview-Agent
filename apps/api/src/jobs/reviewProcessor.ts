@@ -7,7 +7,7 @@ import type { ReviewJobData } from "./queue";
 import { fetchPullRequestFiles } from "../services/diff/fetcher";
 import { chunkFileDiff } from "../services/diff/chunker";
 import { parseGitHubFiles } from "../services/diff/parser";
-import { createGeminiClient, DEFAULT_GEMINI_MODEL } from "../services/llm/client";
+import { createGroqClient, DEFAULT_GROQ_MODEL } from "../services/llm/client";
 import { orchestrateReview } from "../services/llm/orchestrator";
 import { persistReviewResult } from "../services/review/persistence";
 import { loadRepositoryConfig } from "../services/review/repositoryConfig";
@@ -25,8 +25,8 @@ async function processReviewJob(data: ReviewJobData): Promise<void> {
   const parsedFiles = parseGitHubFiles(rawFiles);
   const chunks = parsedFiles.flatMap((fileDiff) => chunkFileDiff(fileDiff));
   const repositoryConfig = await loadRepositoryConfig(data.owner, data.repo);
-  const modelName = repositoryConfig?.model ?? DEFAULT_GEMINI_MODEL;
-  const model = createGeminiClient(modelName);
+  const modelName = repositoryConfig?.model ?? DEFAULT_GROQ_MODEL;
+  const model = createGroqClient(modelName);
   const reviewOutput = await orchestrateReview({
     model,
     fileDiffs: parsedFiles,

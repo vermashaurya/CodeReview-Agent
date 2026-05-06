@@ -16,7 +16,7 @@ export const repositories = pgTable("repositories", {
   githubOwner: text("github_owner").notNull(),
   githubRepo: text("github_repo").notNull(),
   githubTokenEnc: text("github_token_enc").notNull(),
-  model: text("model").notNull().default("gemini-1.5-flash"),
+  model: text("model").notNull().default("llama-3.3-70b-versatile"),
   reviewPolicy: jsonb("review_policy"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
