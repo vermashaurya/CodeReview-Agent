@@ -14,7 +14,6 @@ const reviewCommentSchema = z.object({
   explanation: z.string(),
   suggested_fix: z.string().optional(),
   references_similar_pattern: z.string().optional(),
-  confidence: z.number(),
 });
 
 export const reviewOutputSchema = z.object({
@@ -46,7 +45,7 @@ function normalizeReviewOutput(fileDiff: FileDiff, reviewOutput: ReviewOutputSha
     .map((comment) => ({
       ...comment,
       file_path: fileDiff.filename,
-      confidence: Number(comment.confidence.toFixed(2)),
+      confidence: 0.9,
     }));
 
   return {

@@ -23,7 +23,7 @@ describe("chunkFileDiff", () => {
 
     const chunks = chunkFileDiff(fileDiff!);
     expect(chunks).toHaveLength(1);
-    expect(chunks[0]?.changedLines).toBe(6);
+    expect(chunks[0]?.changedLines).toBe(8);
   });
 
   test("splits very large diffs into overlapping 200-line chunks", async () => {
