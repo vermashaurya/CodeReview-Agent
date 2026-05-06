@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS repositories (
   github_owner TEXT NOT NULL,
   github_repo TEXT NOT NULL,
   github_token_enc TEXT NOT NULL,
-  model TEXT NOT NULL DEFAULT 'gemini-1.5-flash',
+  model TEXT NOT NULL DEFAULT 'llama-3.3-70b-versatile',
   review_policy JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
