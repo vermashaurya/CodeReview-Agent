@@ -74,6 +74,7 @@ export const reviewComments = pgTable("review_comments", {
   title: text("title").notNull(),
   explanation: text("explanation").notNull(),
   suggestedFix: text("suggested_fix"),
+  referencesSimilarPattern: text("references_similar_pattern"),
   confidence: numeric("confidence", { precision: 3, scale: 2 }),
   githubCommentId: text("github_comment_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),

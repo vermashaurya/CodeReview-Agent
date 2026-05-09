@@ -6,6 +6,7 @@ import { withRetry, type RetryOptions } from "../../lib/retry";
 import { buildSummaryPrompt, reviewSystemPrompt } from "./prompts";
 import { reviewDiffChunk } from "./reviewer";
 import type { StructuredOutputModel } from "./types";
+import type { RetrievedChunk } from "../../types/rag";
 
 const reviewSummarySchema = z.object({
   summary: z.string(),
@@ -59,10 +60,16 @@ async function summarizeReview(params: {
 
 export interface OrchestrateReviewParams {
   model: StructuredOutputModel;
+  repositoryId: string;
   fileDiffs: FileDiff[];
   diffChunks: DiffChunk[];
   reviewPolicy?: string | null;
   retryOptions?: RetryOptions;
+  retrieveSimilarChunksFn?: (
+    repositoryId: string,
+    queryText: string,
+    topK?: number,
+  ) => Promise<RetrievedChunk[]>;
 }
 
 export async function orchestrateReview(params: OrchestrateReviewParams): Promise<ReviewOutput> {
@@ -76,10 +83,12 @@ export async function orchestrateReview(params: OrchestrateReviewParams): Promis
 
     const fileReview = await reviewDiffChunk({
       model: params.model,
+      repositoryId: params.repositoryId,
       fileDiff: diffChunk.file,
       context,
       reviewPolicy: params.reviewPolicy,
       retryOptions: params.retryOptions,
+      retrieveSimilarChunksFn: params.retrieveSimilarChunksFn,
     });
 
     collectedComments.push(...fileReview.comments);

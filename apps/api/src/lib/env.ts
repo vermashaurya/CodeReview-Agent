@@ -13,7 +13,7 @@ const envSchema = z.object({
   GITHUB_CLIENT_ID: z.string().optional().default(""),
   GITHUB_CLIENT_SECRET: z.string().optional().default(""),
   GROQ_API_KEY: z.string().min(1, "GROQ_API_KEY is required"),
-  OPENAI_API_KEY: z.string().optional().default(""),
+  COHERE_API_KEY: z.string().min(1, "COHERE_API_KEY is required"),
   TOKEN_ENCRYPTION_KEY: z.string().optional().default(""),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   API_PORT: z.coerce.number().int().positive().default(3001),
