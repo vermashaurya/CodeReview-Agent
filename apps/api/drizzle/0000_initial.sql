@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS review_comments (
   title TEXT NOT NULL,
   explanation TEXT NOT NULL,
   suggested_fix TEXT,
+  references_similar_pattern TEXT,
   confidence NUMERIC(3, 2),
   github_comment_id TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()

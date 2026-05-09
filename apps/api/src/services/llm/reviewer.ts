@@ -2,8 +2,10 @@ import type { FileDiff, ReviewOutput } from "@icra/shared/types";
 import { z } from "zod";
 
 import { withRetry, type RetryOptions } from "../../lib/retry";
+import { retrieveSimilarChunks } from "../retriever/retriever";
 import { buildFileReviewPrompt, reviewSystemPrompt } from "./prompts";
 import type { StructuredOutputModel } from "./types";
+import type { RetrievedChunk } from "../../types/rag";
 
 const reviewCommentSchema = z.object({
   file_path: z.string(),
@@ -14,6 +16,7 @@ const reviewCommentSchema = z.object({
   explanation: z.string(),
   suggested_fix: z.string().optional(),
   references_similar_pattern: z.string().optional(),
+  confidence: z.number().min(0).max(1),
 });
 
 export const reviewOutputSchema = z.object({
@@ -38,14 +41,26 @@ function collectAllowedLineNumbers(fileDiff: FileDiff): Set<number> {
   return allowed;
 }
 
-function normalizeReviewOutput(fileDiff: FileDiff, reviewOutput: ReviewOutputShape): ReviewOutput {
+function normalizeReviewOutput(
+  fileDiff: FileDiff,
+  retrievedChunks: RetrievedChunk[],
+  reviewOutput: ReviewOutputShape,
+): ReviewOutput {
   const allowedLineNumbers = collectAllowedLineNumbers(fileDiff);
+  const retrievedLabels = new Set(
+    retrievedChunks.map((chunk) => `${chunk.filePath}:${chunk.startLine}-${chunk.endLine}`),
+  );
   const comments = reviewOutput.comments
     .filter((comment) => allowedLineNumbers.has(comment.line_number))
     .map((comment) => ({
       ...comment,
       file_path: fileDiff.filename,
-      confidence: 0.9,
+      confidence: Number(comment.confidence.toFixed(2)),
+      references_similar_pattern:
+        comment.references_similar_pattern &&
+        retrievedLabels.has(comment.references_similar_pattern)
+          ? comment.references_similar_pattern
+          : undefined,
     }));
 
   return {
@@ -57,20 +72,34 @@ function normalizeReviewOutput(fileDiff: FileDiff, reviewOutput: ReviewOutputSha
 
 export interface ReviewDiffChunkParams {
   model: StructuredOutputModel;
+  repositoryId: string;
   fileDiff: FileDiff;
   context: string;
   reviewPolicy?: string | null;
   retryOptions?: RetryOptions;
+  retrieveSimilarChunksFn?: (
+    repositoryId: string,
+    queryText: string,
+    topK?: number,
+  ) => Promise<RetrievedChunk[]>;
 }
 
 export async function reviewDiffChunk(params: ReviewDiffChunkParams): Promise<ReviewOutput> {
+  const queryText = params.fileDiff.hunks
+    .flatMap((hunk) => hunk.lines.map((line) => line.content))
+    .join("\n");
+  const retrievedChunks = await (
+    params.retrieveSimilarChunksFn ?? retrieveSimilarChunks
+  )(params.repositoryId, queryText, 8);
   const runnable = params.model.withStructuredOutput(reviewOutputSchema, {
     name: "submit_review",
   });
 
-  const prompt = [reviewSystemPrompt, "", buildFileReviewPrompt(params.fileDiff, params.context, params.reviewPolicy)].join(
-    "\n",
-  );
+  const prompt = [
+    reviewSystemPrompt,
+    "",
+    buildFileReviewPrompt(params.fileDiff, params.context, retrievedChunks, params.reviewPolicy),
+  ].join("\n");
 
   const result = await withRetry(
     async () => runnable.invoke(prompt),
@@ -80,5 +109,5 @@ export async function reviewDiffChunk(params: ReviewDiffChunkParams): Promise<Re
     },
   );
 
-  return normalizeReviewOutput(params.fileDiff, result);
+  return normalizeReviewOutput(params.fileDiff, retrievedChunks, result);
 }

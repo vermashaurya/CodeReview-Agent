@@ -81,6 +81,7 @@ export async function createReviewRecord(
                 title: comment.title,
                 explanation: comment.explanation,
                 suggestedFix: comment.suggested_fix ?? null,
+                referencesSimilarPattern: comment.references_similar_pattern ?? null,
                 confidence: comment.confidence.toFixed(2),
               })),
             )

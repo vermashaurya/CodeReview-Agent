@@ -165,9 +165,11 @@ describe("orchestrateReview", () => {
 
     const result = await orchestrateReview({
       model,
+      repositoryId: "repo-1",
       fileDiffs: [fileDiffA, fileDiffB],
       diffChunks,
       reviewPolicy: "Flag unsafe dynamic execution as critical.",
+      retrieveSimilarChunksFn: async () => [],
     });
 
     expect(result.summary).toContain("critical security concern");

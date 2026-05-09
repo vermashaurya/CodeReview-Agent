@@ -1,4 +1,5 @@
 import type { FileDiff, ReviewComment } from "@icra/shared/types";
+import type { RetrievedChunk } from "../../types/rag";
 
 function serializeDiff(fileDiff: FileDiff): string {
   const hunkText = fileDiff.hunks
@@ -55,6 +56,7 @@ export const reviewSystemPrompt = [
   "Do not hallucinate file paths or line numbers. Every line_number must exist in the provided diff chunk.",
   "Use confidence below 0.50 when a finding is tentative or based on incomplete context.",
   "Prefer high-signal findings covering correctness, security, architecture, performance, and style.",
+  "If a finding is informed by an existing codebase pattern, set references_similar_pattern to the exact label in the form path:start-end.",
   "Do not repeat the diff verbatim. Explain the issue, the risk, and a concrete suggested fix when appropriate.",
   "If no actionable issues exist, return an empty comments array and a concise summary.",
 ].join("\n");
@@ -62,9 +64,21 @@ export const reviewSystemPrompt = [
 export function buildFileReviewPrompt(
   fileDiff: FileDiff,
   context: string,
+  retrievedChunks: RetrievedChunk[],
   reviewPolicy?: string | null,
 ): string {
   const policyText = reviewPolicy ? reviewPolicy : "No repository-specific review policy provided.";
+  const similarPatternsText =
+    retrievedChunks.length > 0
+      ? retrievedChunks
+          .map((chunk, index) => {
+            return [
+              `Pattern ${index + 1}: ${chunk.filePath}:${chunk.startLine}-${chunk.endLine}`,
+              chunk.content,
+            ].join("\n");
+          })
+          .join("\n\n")
+      : "No similar codebase patterns were retrieved.";
 
   return [
     "Review this pull request diff chunk for a single file.",
@@ -75,6 +89,9 @@ export function buildFileReviewPrompt(
     "",
     "Additional context:",
     context,
+    "",
+    "Existing codebase patterns for reference:",
+    similarPatternsText,
     "",
     "Diff chunk:",
     serializeDiff(fileDiff),

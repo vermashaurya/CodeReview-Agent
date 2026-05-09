@@ -5,6 +5,8 @@ import { repositories } from "../../db/schema";
 
 export interface RepositoryConfig {
   id: string;
+  githubOwner: string;
+  githubRepo: string;
   model: string;
   reviewPolicy: string | null;
   githubToken: string;
@@ -29,6 +31,8 @@ export async function loadRepositoryConfig(
   const rows = await db
     .select({
       id: repositories.id,
+      githubOwner: repositories.githubOwner,
+      githubRepo: repositories.githubRepo,
       model: repositories.model,
       reviewPolicy: repositories.reviewPolicy,
       githubToken: repositories.githubTokenEnc,
@@ -44,6 +48,37 @@ export async function loadRepositoryConfig(
 
   return {
     id: repository.id,
+    githubOwner: repository.githubOwner,
+    githubRepo: repository.githubRepo,
+    model: repository.model,
+    reviewPolicy: stringifyReviewPolicy(repository.reviewPolicy),
+    githubToken: repository.githubToken,
+  };
+}
+
+export async function loadRepositoryConfigById(repositoryId: string): Promise<RepositoryConfig | null> {
+  const rows = await db
+    .select({
+      id: repositories.id,
+      githubOwner: repositories.githubOwner,
+      githubRepo: repositories.githubRepo,
+      model: repositories.model,
+      reviewPolicy: repositories.reviewPolicy,
+      githubToken: repositories.githubTokenEnc,
+    })
+    .from(repositories)
+    .where(eq(repositories.id, repositoryId))
+    .limit(1);
+
+  const repository = rows[0];
+  if (!repository) {
+    return null;
+  }
+
+  return {
+    id: repository.id,
+    githubOwner: repository.githubOwner,
+    githubRepo: repository.githubRepo,
     model: repository.model,
     reviewPolicy: stringifyReviewPolicy(repository.reviewPolicy),
     githubToken: repository.githubToken,

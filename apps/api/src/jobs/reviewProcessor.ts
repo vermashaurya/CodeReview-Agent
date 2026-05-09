@@ -54,6 +54,7 @@ async function processReviewJob(data: ReviewJobData): Promise<void> {
   const model = createGroqClient(modelName);
   const reviewOutput = await orchestrateReview({
     model,
+    repositoryId: repositoryConfig.id,
     fileDiffs: parsedFiles,
     diffChunks: chunks,
     reviewPolicy: repositoryConfig.reviewPolicy,

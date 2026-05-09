@@ -3,7 +3,9 @@ import { Hono } from "hono";
 import { env } from "./lib/env";
 import { logger } from "./lib/logger";
 import { getMetricsRegistry } from "./lib/metrics";
+import { adminRoute } from "./routes/admin";
 import { webhookRoute } from "./routes/webhook";
+import "./jobs/indexingProcessor";
 import "./jobs/reviewProcessor";
 
 const app = new Hono();
@@ -18,6 +20,7 @@ app.get("/metrics", async (c) => {
 });
 
 app.route("/webhook", webhookRoute);
+app.route("/api", adminRoute);
 
 app.onError((error, c) => {
   logger.error({ err: error }, "Unhandled API error");

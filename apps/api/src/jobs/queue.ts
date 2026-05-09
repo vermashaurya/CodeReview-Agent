@@ -10,6 +10,10 @@ export interface ReviewJobData {
   installationId?: number;
 }
 
+export interface IndexingJobData {
+  repositoryId: string;
+}
+
 export const reviewQueue = new Queue<ReviewJobData>("review", {
   connection: redisConnection,
   defaultJobOptions: {
@@ -19,3 +23,11 @@ export const reviewQueue = new Queue<ReviewJobData>("review", {
   },
 });
 
+export const indexingQueue = new Queue<IndexingJobData>("indexing", {
+  connection: redisConnection,
+  defaultJobOptions: {
+    attempts: 1,
+    removeOnComplete: 50,
+    removeOnFail: 50,
+  },
+});

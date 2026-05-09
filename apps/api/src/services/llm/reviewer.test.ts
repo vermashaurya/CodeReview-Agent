@@ -4,6 +4,7 @@ import type { ZodType } from "zod";
 
 import { reviewDiffChunk } from "./reviewer";
 import type { StructuredOutputModel, StructuredOutputRunner } from "./types";
+import type { RetrievedChunk } from "../../types/rag";
 
 class MockStructuredOutputModel implements StructuredOutputModel {
   private readonly handlers: Map<string, (input: string) => unknown>;
@@ -83,6 +84,7 @@ describe("reviewDiffChunk", () => {
             category: "style",
             title: "Avoid debug logging",
             explanation: "This log statement should not ship.",
+            references_similar_pattern: "src/pattern.ts:5-12",
             confidence: 0.734,
           },
           {
@@ -100,8 +102,20 @@ describe("reviewDiffChunk", () => {
 
     const result = await reviewDiffChunk({
       model,
+      repositoryId: "repo-1",
       fileDiff,
       context: "No additional context.",
+      retrieveSimilarChunksFn: async (): Promise<RetrievedChunk[]> => [
+        {
+          filePath: "src/pattern.ts",
+          language: "typescript",
+          startLine: 5,
+          endLine: 12,
+          content: "export function sanitize(input: string) { return input.trim(); }",
+          commitSha: "abc123",
+          distance: 0.12,
+        },
+      ],
     });
 
     expect(result.summary).toBe("Found a risky logging statement.");
@@ -113,10 +127,12 @@ describe("reviewDiffChunk", () => {
       category: "style",
       title: "Avoid debug logging",
       explanation: "This log statement should not ship.",
-      confidence: 0.9,
+      references_similar_pattern: "src/pattern.ts:5-12",
+      confidence: 0.73,
     });
     expect(model.prompts[0]?.name).toBe("submit_review");
     expect(model.prompts[0]?.input.includes("Do not hallucinate file paths or line numbers.")).toBe(true);
+    expect(model.prompts[0]?.input.includes("Existing codebase patterns for reference")).toBe(true);
   });
 
   test("retries Gemini calls with exponential backoff", async () => {
@@ -139,8 +155,10 @@ describe("reviewDiffChunk", () => {
 
     const result = await reviewDiffChunk({
       model,
+      repositoryId: "repo-1",
       fileDiff,
       context: "No additional context.",
+      retrieveSimilarChunksFn: async (): Promise<RetrievedChunk[]> => [],
       retryOptions: {
         attempts: 3,
         baseDelayMs: 2000,
